@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scraps n' Bids — Live Auction</title>
+
+  <!-- ============================================================
+       MODULE 2: CSS STYLES
+       Warm color scheme, animations, responsive layout
+       ============================================================ -->
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #faf6f1;
+      color: #2d2d2d;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #b5451b;
+      letter-spacing: -0.5px;
+    }
+
+    header .tagline {
+      font-size: 0.95rem;
+      color: #7a7a7a;
+      margin-top: 0.25rem;
+    }
+
+    #meal-progress {
+      font-size: 0.85rem;
+      color: #999;
+      margin-top: 0.5rem;
+    }
+
+    main {
+      width: 100%;
+      max-width: 640px;
+      padding: 0 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Auction Card */
+    .auction-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .meal-photo {
+      font-size: 4rem;
+      line-height: 1;
+    }
+
+    #meal-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #333;
+    }
+
+    #meal-description {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .category-badge {
+      display: inline-block;
+      background: #f0e6d6;
+      color: #8b6914;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    /* Status Indicator */
+    #auction-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #auction-status.live {
+      color: #1a8a3f;
+    }
+
+    #auction-status.live::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1a8a3f;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    #auction-status.sold {
+      color: #b5451b;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Countdown */
+    #countdown {
+      font-size: 3rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: #333;
+      letter-spacing: 2px;
+      transition: color 0.3s;
+    }
+
+    #countdown.warning {
+      color: #cc2222;
+    }
+
+    /* Current Bid */
+    .bid-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+    }
+
+    .bid-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #999;
+    }
+
+    #current-bid {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1a8a3f;
+    }
+
+    /* Bid Feed */
+    .bid-feed {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 1rem 1.25rem;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .bid-feed h2 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #999;
+      margin-bottom: 0.75rem;
+    }
+
+    #bid-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .bid-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #f0ede8;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .bid-entry:last-child {
+      border-bottom: none;
+    }
+
+    .bid-name {
+      font-weight: 600;
+      color: #444;
+      font-size: 0.9rem;
+    }
+
+    .bid-amount {
+      font-weight: 700;
+      color: #1a8a3f;
+      font-size: 0.9rem;
+    }
+
+    .bid-time {
+      font-size: 0.75rem;
+      color: #aaa;
+      margin-left: 0.5rem;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Winner Banner */
+    #winner-banner {
+      display: none;
+      background: linear-gradient(135deg, #b5451b, #d4762c);
+      color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      animation: bannerIn 0.5s ease-out;
+    }
+
+    #winner-banner.visible {
+      display: block;
+    }
+
+    #winner-banner .winner-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #winner-banner .winner-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    #winner-banner .winner-details {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+    }
+
+    @keyframes bannerIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* End Screen */
+    #end-screen {
+      display: none;
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    #end-screen.visible {
+      display: block;
+    }
+
+    #end-screen .end-emoji {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    #end-screen h2 {
+      font-size: 1.6rem;
+      color: #b5451b;
+      margin-bottom: 0.5rem;
+    }
+
+    #end-screen p {
+      color: #777;
+      font-size: 0.95rem;
+    }
+
+    /* Hide auction UI when complete */
+    .auction-card.hidden,
+    .bid-feed.hidden {
+      display: none;
+    }
+
+    /* Scrollbar styling */
+    .bid-feed::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .bid-feed::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       MODULE 1: HTML STRUCTURE
+       Semantic layout with stable IDs for rtrvr agent parsing
+       ============================================================ -->
+  <header>
+    <h1>Scraps n' Bids</h1>
+    <p class="tagline">Live auctions for unfinished meals</p>
+    <p id="meal-progress">Loading...</p>
+  </header>
+
+  <main>
+    <div class="auction-card" id="auction-card">
+      <span class="meal-photo" id="meal-photo"></span>
+      <h2 id="meal-name"></h2>
+      <p id="meal-description"></p>
+      <span class="category-badge" id="meal-category"></span>
+      <span id="auction-status" class="live">LIVE</span>
+      <div id="countdown">0:00</div>
+      <div class="bid-display">
+        <span class="bid-label">Current Bid</span>
+        <span id="current-bid">$0.00</span>
+      </div>
+    </div>
+
+    <div class="bid-feed" id="bid-feed">
+      <h2>Bid History</h2>
+      <div id="bid-list"></div>
+    </div>
+
+    <div id="winner-banner">
+      <div class="winner-emoji"></div>
+      <div class="winner-text"></div>
+      <div class="winner-details"></div>
+    </div>
+
+    <div id="end-screen">
+      <div class="end-emoji"></div>
+      <h2></h2>
+      <p></p>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       JAVASCRIPT MODULES (IIFE pattern, dependency order)
+       ============================================================ -->
+  <script>
+  // ============================================================
+  // MODULE 3: MEAL DATA
+  // Hardcoded array of 6 unfinished meals
+  // ============================================================
+  var ScrapsNBids = ScrapsNBids || {};
+
+  ScrapsNBids.MEALS = [
+    {
+      id: 'tuesdays-pad-thai',
+      name: "Tuesday's Pad Thai",
+      description: "Was going to finish it but then someone mentioned cake in the break room.",
+      category: 'asian',
+      startingBid: 1.50,
+      photo: '🍜',
+      auctionDuration: 45
+    },
+    {
+      id: 'half-a-burrito',
+      name: 'Half a Burrito',
+      description: "The good half. Someone already took the end with all the sour cream.",
+      category: 'mexican',
+      startingBid: 2.00,
+      photo: '🌯',
+      auctionDuration: 40
+    },
+    {
+      id: 'mystery-stir-fry',
+      name: 'Mystery Stir Fry',
+      description: "It was definitely vegetables at some point. Could be anything now.",
+      category: 'asian',
+      startingBid: 1.00,
+      photo: '🥘',
+      auctionDuration: 35
+    },
+    {
+      id: 'sad-desk-salad',
+      name: 'Sad Desk Salad',
+      description: "Wilting gracefully since 11:30 AM. Dressing on the side (missing).",
+      category: 'american',
+      startingBid: 0.75,
+      photo: '🥗',
+      auctionDuration: 40
+    },
+    {
+      id: 'quarter-pepperoni-pizza',
+      name: 'Quarter Pepperoni Pizza',
+      description: "Three slices already claimed. This is the survivor. Slightly cold.",
+      category: 'american',
+      startingBid: 3.00,
+      photo: '🍕',
+      auctionDuration: 50
+    },
+    {
+      id: 'leftover-lasagna-block',
+      name: 'Leftover Lasagna Block',
+      description: "A dense cube of layered perfection. Microwave at your own risk.",
+      category: 'italian',
+      startingBid: 2.50,
+      photo: '🧱',
+      auctionDuration: 45
+    }
+  ];
+
+  // ============================================================
+  // MODULE 4: UTILITY HELPERS
+  // Pure formatting and random functions
+  // ============================================================
+  ScrapsNBids.Utils = (function() {
+    function formatCurrency(amount) {
+      return '$' + amount.toFixed(2);
+    }
+
+    function formatRelativeTime(timestamp) {
+      var seconds = Math.floor((Date.now() - timestamp) / 1000);
+      if (seconds < 2) return 'just now';
+      if (seconds < 60) return seconds + 's ago';
+      var minutes = Math.floor(seconds / 60);
+      return minutes + 'm ago';
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randomChoice(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function randomBidIncrement(isJump) {
+      if (isJump) {
+        return +(1.00 + Math.random() * 1.00).toFixed(2);
+      }
+      return +(0.10 + Math.random() * 0.65).toFixed(2);
+    }
+
+    return {
+      formatCurrency: formatCurrency,
+      formatRelativeTime: formatRelativeTime,
+      randomInt: randomInt,
+      randomChoice: randomChoice,
+      randomBidIncrement: randomBidIncrement
+    };
+  })();
+
+  // ============================================================
+  // MODULE 5: AUCTION STATE
+  // Centralized state management singleton
+  // Depends on: meal_data
+  // ============================================================
+  ScrapsNBids.AuctionState = (function(MEALS) {
+    var state = {
+      currentMealIndex: 0,
+      bids: [],
+      startedAt: 0,
+      status: 'active'
+    };
+
+    function initAuction() {
+      state.currentMealIndex = 0;
+      state.bids = [];
+      state.startedAt = Date.now();
+      state.status = 'active';
+      console.log('[AuctionState] Initialized auction for:', MEALS[0].name);
+    }
+
+    function addBid(bidder, amount) {
+      var bid = { bidder: bidder, amount: amount, timestamp: Date.now() };
+      state.bids.push(bid);
+      console.log('[AuctionState] Bid:', bidder, ScrapsNBids.Utils.formatCurrency(amount));
+    }
+
+    function getCurrentMeal() {
+      return MEALS[state.currentMealIndex];
+    }
+
+    function getHighestBid() {
+      if (state.bids.length === 0) {
+        return getCurrentMeal().startingBid;
+      }
+      return state.bids[state.bids.length - 1].amount;
+    }
+
+    function getBids() {
+      return state.bids.slice();
+    }
+
+    function getStatus() {
+      return state.status;
+    }
+
+    function getCurrentMealIndex() {
+      return state.currentMealIndex;
+    }
+
+    function advanceToNextMeal() {
+      state.currentMealIndex++;
+      if (state.currentMealIndex >= MEALS.length) {
+        state.status = 'complete';
+        console.log('[AuctionState] All meals auctioned');
+        return false;
+      }
+      state.bids = [];
+      state.startedAt = Date.now();
+      state.status = 'active';
+      console.log('[AuctionState] Advanced to:', MEALS[state.currentMealIndex].name);
+      return true;
+    }
+
+    function markAsSold() {
+      state.status = 'sold';
+      console.log('[AuctionState] Marked as SOLD');
+    }
+
+    function isComplete() {
+      return state.status === 'complete';
+    }
+
+    function getWinner() {
+      if (state.bids.length === 0) return null;
+      return state.bids[state.bids.length - 1];
+    }
+
+    return {
+      initAuction: initAuction,
+      addBid: addBid,
+      getCurrentMeal: getCurrentMeal,
+      getHighestBid: getHighestBid,
+      getBids: getBids,
+      getStatus: getStatus,
+      getCurrentMealIndex: getCurrentMealIndex,
+      advanceToNextMeal: advanceToNextMeal,
+      markAsSold: markAsSold,
+      isComplete: isComplete,
+      getWinner: getWinner
+    };
+  })(ScrapsNBids.MEALS);
+
+  // ============================================================
+  // MODULE 6: TIMER MODULE
+  // Countdown logic with setInterval
+  // Depends on: utility_helpers
+  // ============================================================
+  ScrapsNBids.Timer = (function() {
+    function startCountdown(durationSeconds, onTick, onComplete) {
+      var remaining = durationSeconds;
+      if (remaining <= 0) {
+        onComplete();
+        return function() {};
+      }
+
+      onTick(remaining);
+
+      var intervalId = setInterval(function() {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(intervalId);
+          onTick(0);
+          onComplete();
+        } else {
+          onTick(remaining);
+        }
+      }, 1000);
+
+      return function stopCountdown() {
+        clearInterval(intervalId);
+      };
+    }
+
+    return {
+      startCountdown: startCountdown
+    };
+  })();
+
+  // ============================================================
+  // MODULE 7: BIDDING ENGINE
+  // Synthesized bid generation with randomized timing
+  // Depends on: utility_helpers, auction_state
+  // ============================================================
+  ScrapsNBids.BiddingEngine = (function(Utils, AuctionState) {
+    var BIDDERS = [
+      'FoodieGregory', 'BargainBeth', 'SnackAttack99', 'ThriftyTina',
+      'LunchLarry', 'DealDave', 'MealStealer', 'CheapEats_Carol',
+      'BidKing_Tom', 'LeftoverLove', 'BargainHunter_X', 'PricePete'
+    ];
+
+    function startBiddingEngine(onBid, getRemainingSeconds) {
+      var stopped = false;
+      var timeoutId = null;
+
+      function scheduleBid(isFirst) {
+        if (stopped) return;
+        if (AuctionState.getStatus() !== 'active') return;
+
+        var remaining = getRemainingSeconds ? getRemainingSeconds() : 999;
+        var delay;
+
+        if (isFirst) {
+          delay = Utils.randomInt(3, 8) * 1000;
+        } else if (remaining <= 10) {
+          delay = Utils.randomInt(1, 3) * 1000;
+        } else {
+          delay = Utils.randomInt(2, 6) * 1000;
+        }
+
+        timeoutId = setTimeout(function() {
+          if (stopped) return;
+          if (AuctionState.getStatus() !== 'active') return;
+
+          var bidder = Utils.randomChoice(BIDDERS);
+          var isJump = Math.random() < 0.2;
+          var increment = Utils.randomBidIncrement(isJump);
+          var amount = +(AuctionState.getHighestBid() + increment).toFixed(2);
+
+          onBid(bidder, amount);
+          scheduleBid(false);
+        }, delay);
+      }
+
+      scheduleBid(true);
+
+      return function stopBiddingEngine() {
+        stopped = true;
+        if (timeoutId) clearTimeout(timeoutId);
+      };
+    }
+
+    return {
+      startBiddingEngine: startBiddingEngine
+    };
+  })(ScrapsNBids.Utils, ScrapsNBids.AuctionState);
+
+  // ============================================================
+  // MODULE 8: DOM RENDER
+  // All UI updates and element manipulation
+  // Depends on: utility_helpers, auction_state
+  // ============================================================
+  ScrapsNBids.DOMRender = (function(Utils) {
+    var els = {};
+
+    function cacheElements() {
+      els.mealPhoto = document.getElementById('meal-photo');
+      els.mealName = document.getElementById('meal-name');
+      els.mealDescription = document.getElementById('meal-description');
+      els.mealCategory = document.getElementById('meal-category');
+      els.auctionStatus = document.getElementById('auction-status');
+      els.countdown = document.getElementById('countdown');
+      els.currentBid = document.getElementById('current-bid');
+      els.bidList = document.getElementById('bid-list');
+      els.winnerBanner = document.getElementById('winner-banner');
+      els.endScreen = document.getElementById('end-screen');
+      els.mealProgress = document.getElementById('meal-progress');
+      els.auctionCard = document.getElementById('auction-card');
+      els.bidFeed = document.getElementById('bid-feed');
+    }
+
+    function formatCountdown(seconds) {
+      var m = Math.floor(seconds / 60);
+      var s = seconds % 60;
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function renderAuctionCard(meal, highestBid, countdown, status) {
+      els.mealPhoto.textContent = meal.photo;
+      els.mealName.textContent = meal.name;
+      els.mealDescription.textContent = meal.description;
+      els.mealCategory.textContent = meal.category;
+      els.countdown.textContent = formatCountdown(countdown);
+      els.currentBid.textContent = Utils.formatCurrency(highestBid);
+
+      els.auctionStatus.className = '';
+      if (status === 'active') {
+        els.auctionStatus.textContent = 'LIVE';
+        els.auctionStatus.classList.add('live');
+      } else if (status === 'sold') {
+        els.auctionStatus.textContent = 'SOLD';
+        els.auctionStatus.classList.add('sold');
+      }
+    }
+
+    function renderBidFeed(bids) {
+      var fragment = document.createDocumentFragment();
+      var reversed = bids.slice().reverse();
+
+      for (var i = 0; i < reversed.length; i++) {
+        var bid = reversed[i];
+        var entry = document.createElement('div');
+        entry.className = 'bid-entry';
+
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'bid-name';
+        nameSpan.textContent = bid.bidder;
+
+        var rightSide = document.createElement('span');
+
+        var amountSpan = document.createElement('span');
+        amountSpan.className = 'bid-amount';
+        amountSpan.textContent = Utils.formatCurrency(bid.amount);
+
+        var timeSpan = document.createElement('span');
+        timeSpan.className = 'bid-time';
+        timeSpan.textContent = Utils.formatRelativeTime(bid.timestamp);
+
+        rightSide.appendChild(amountSpan);
+        rightSide.appendChild(timeSpan);
+
+        entry.appendChild(nameSpan);
+        entry.appendChild(rightSide);
+        fragment.appendChild(entry);
+      }
+
+      els.bidList.innerHTML = '';
+      els.bidList.appendChild(fragment);
+    }
+
+    function renderWinnerBanner(bidder, meal, amount) {
+      els.winnerBanner.querySelector('.winner-emoji').textContent = '🎉🏆🎉';
+      els.winnerBanner.querySelector('.winner-text').textContent = bidder + ' wins!';
+      els.winnerBanner.querySelector('.winner-details').textContent =
+        meal.name + ' sold for ' + Utils.formatCurrency(amount);
+      els.winnerBanner.classList.add('visible');
+    }
+
+    function hideWinnerBanner() {
+      els.winnerBanner.classList.remove('visible');
+    }
+
+    function renderEndScreen() {
+      els.auctionCard.classList.add('hidden');
+      els.bidFeed.classList.add('hidden');
+      hideWinnerBanner();
+
+      els.endScreen.querySelector('.end-emoji').textContent = '🍽️';
+      els.endScreen.querySelector('h2').textContent = "That's all folks!";
+      els.endScreen.querySelector('p').textContent =
+        'All 6 meals have been auctioned off. Thanks for watching!';
+      els.endScreen.classList.add('visible');
+    }
+
+    function updateMealProgress(current, total) {
+      els.mealProgress.textContent = current + ' of ' + total;
+    }
+
+    function updateCountdownColor(remaining) {
+      if (remaining <= 10) {
+        els.countdown.classList.add('warning');
+      } else {
+        els.countdown.classList.remove('warning');
+      }
+    }
+
+    function showAuctionUI() {
+      els.auctionCard.classList.remove('hidden');
+      els.bidFeed.classList.remove('hidden');
+      els.endScreen.classList.remove('visible');
+    }
+
+    return {
+      cacheElements: cacheElements,
+      renderAuctionCard: renderAuctionCard,
+      renderBidFeed: renderBidFeed,
+      renderWinnerBanner: renderWinnerBanner,
+      hideWinnerBanner: hideWinnerBanner,
+      renderEndScreen: renderEndScreen,
+      updateMealProgress: updateMealProgress,
+      updateCountdownColor: updateCountdownColor,
+      showAuctionUI: showAuctionUI
+    };
+  })(ScrapsNBids.Utils);
+
+  // ============================================================
+  // MODULE 9: AUCTION LIFECYCLE
+  // Orchestrates all modules, controls state transitions
+  // Depends on: all modules above
+  // ============================================================
+  (function(MEALS, Utils, AuctionState, Timer, BiddingEngine, DOMRender) {
+    var stopCountdown = null;
+    var stopBidding = null;
+    var remainingSeconds = 0;
+
+    function startAuctionForCurrentMeal() {
+      try {
+        var meal = AuctionState.getCurrentMeal();
+        var index = AuctionState.getCurrentMealIndex();
+        remainingSeconds = meal.auctionDuration;
+
+        DOMRender.showAuctionUI();
+        DOMRender.hideWinnerBanner();
+        DOMRender.updateMealProgress(index + 1, MEALS.length);
+        DOMRender.renderAuctionCard(meal, AuctionState.getHighestBid(), remainingSeconds, 'active');
+        DOMRender.renderBidFeed([]);
+        DOMRender.updateCountdownColor(remainingSeconds);
+
+        stopCountdown = Timer.startCountdown(
+          meal.auctionDuration,
+          function onTick(remaining) {
+            remainingSeconds = remaining;
+            DOMRender.renderAuctionCard(
+              AuctionState.getCurrentMeal(),
+              AuctionState.getHighestBid(),
+              remaining,
+              AuctionState.getStatus()
+            );
+            DOMRender.updateCountdownColor(remaining);
+          },
+          function onComplete() {
+            closeAuction();
+          }
+        );
+
+        stopBidding = BiddingEngine.startBiddingEngine(
+          function onBid(bidder, amount) {
+            AuctionState.addBid(bidder, amount);
+            DOMRender.renderAuctionCard(
+              AuctionState.getCurrentMeal(),
+              AuctionState.getHighestBid(),
+              remainingSeconds,
+              AuctionState.getStatus()
+            );
+            DOMRender.renderBidFeed(AuctionState.getBids());
+          },
+          function getRemainingSeconds() {
+            return remainingSeconds;
+          }
+        );
+
+        console.log('[Lifecycle] Auction started for:', meal.name);
+      } catch (err) {
+        console.error('[Lifecycle] Error starting auction:', err);
+      }
+    }
+
+    function closeAuction() {
+      try {
+        if (stopBidding) stopBidding();
+        stopBidding = null;
+
+        AuctionState.markAsSold();
+        var meal = AuctionState.getCurrentMeal();
+        var winner = AuctionState.getWinner();
+
+        DOMRender.renderAuctionCard(meal, AuctionState.getHighestBid(), 0, 'sold');
+
+        if (winner) {
+          DOMRender.renderWinnerBanner(winner.bidder, meal, winner.amount);
+        }
+
+        console.log('[Lifecycle] Auction closed for:', meal.name);
+
+        setTimeout(function() {
+          var hasMore = AuctionState.advanceToNextMeal();
+          if (hasMore) {
+            startAuctionForCurrentMeal();
+          } else {
+            DOMRender.renderEndScreen();
+            console.log('[Lifecycle] All auctions complete');
+          }
+        }, 3000);
+      } catch (err) {
+        console.error('[Lifecycle] Error closing auction:', err);
+      }
+    }
+
+    function init() {
+      try {
+        DOMRender.cacheElements();
+        AuctionState.initAuction();
+        startAuctionForCurrentMeal();
+        console.log('[Lifecycle] App initialized');
+      } catch (err) {
+        console.error('[Lifecycle] Error initializing app:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  })(
+    ScrapsNBids.MEALS,
+    ScrapsNBids.Utils,
+    ScrapsNBids.AuctionState,
+    ScrapsNBids.Timer,
+    ScrapsNBids.BiddingEngine,
+    ScrapsNBids.DOMRender
+  );
+  </script>
+</body>
+</html>
