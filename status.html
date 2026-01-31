@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraps n' Bids — System Status</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        h1 {
+            color: #00d4aa;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 2rem;
+        }
+        .status-card {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #00d4aa;
+        }
+        .status-card.error {
+            border-left-color: #ff6b6b;
+        }
+        .status-card.warning {
+            border-left-color: #ffd93d;
+        }
+        .status-card h2 {
+            font-size: 1rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+        }
+        .metric {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .metric.ok { color: #00d4aa; }
+        .metric.error { color: #ff6b6b; }
+        .metric.warning { color: #ffd93d; }
+        .metric-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        .error-list {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #0f0f1a;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .error-list-title {
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .error-item {
+            color: #ff9999;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #222;
+        }
+        .error-item:last-child {
+            border-bottom: none;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>System Status</h1>
+    <p class="subtitle">Scraps n' Bids — Real-time Health Monitoring</p>
+
+    <div class="grid">
+        <div class="status-card" id="overall-status-card">
+            <h2>Overall Status</h2>
+            <div class="metric" id="overall-status">Checking...</div>
+            <div class="metric-label" id="overall-label">Running health checks</div>
+        </div>
+
+        <div class="status-card" id="image-status-card">
+            <h2>Image Assets</h2>
+            <div class="metric" id="image-metric">--</div>
+            <div class="metric-label" id="image-label">Checking images...</div>
+        </div>
+
+        <div class="status-card">
+            <h2>Images Loaded</h2>
+            <div class="metric ok" id="images-ok">0</div>
+            <div class="metric-label">Successfully loaded</div>
+        </div>
+
+        <div class="status-card" id="images-failed-card">
+            <h2>Images Failed</h2>
+            <div class="metric" id="images-failed">0</div>
+            <div class="metric-label">Failed to load (404)</div>
+        </div>
+    </div>
+
+    <div id="error-details" style="display: none;">
+        <div class="error-list">
+            <div class="error-list-title">Failed Image URLs:</div>
+            <div id="failed-urls"></div>
+        </div>
+    </div>
+
+    <p class="timestamp" id="timestamp"></p>
+
+    <script>
+        // Image paths from the main application
+        const IMAGE_PATHS = [
+            'imgs/pad-thai.png',
+            'imgs/burrito.png',
+            'imgs/stir-fry.png',
+            'imgs/salad.png',
+            'imgs/pizza.png',
+            'imgs/lasagna.png'
+        ];
+
+        const results = {
+            ok: 0,
+            failed: 0,
+            failedUrls: []
+        };
+
+        function checkImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve({ url, ok: true });
+                img.onerror = () => resolve({ url, ok: false });
+                img.src = url;
+            });
+        }
+
+        async function runHealthCheck() {
+            results.ok = 0;
+            results.failed = 0;
+            results.failedUrls = [];
+
+            const checks = await Promise.all(IMAGE_PATHS.map(checkImage));
+
+            checks.forEach(result => {
+                if (result.ok) {
+                    results.ok++;
+                } else {
+                    results.failed++;
+                    results.failedUrls.push(result.url);
+                }
+            });
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const total = results.ok + results.failed;
+            const errorRate = total > 0 ? (results.failed / total * 100).toFixed(0) : 0;
+
+            // Overall status
+            const overallEl = document.getElementById('overall-status');
+            const overallLabel = document.getElementById('overall-label');
+            const overallCard = document.getElementById('overall-status-card');
+
+            if (results.failed === 0) {
+                overallEl.textContent = 'HEALTHY';
+                overallEl.className = 'metric ok';
+                overallLabel.textContent = 'All systems operational';
+                overallCard.className = 'status-card';
+            } else if (results.failed < total) {
+                overallEl.textContent = 'DEGRADED';
+                overallEl.className = 'metric warning';
+                overallLabel.textContent = 'Some assets failing to load';
+                overallCard.className = 'status-card warning';
+            } else {
+                overallEl.textContent = 'CRITICAL';
+                overallEl.className = 'metric error';
+                overallLabel.textContent = 'Major asset loading failures';
+                overallCard.className = 'status-card error';
+            }
+
+            // Image status
+            const imageMetric = document.getElementById('image-metric');
+            const imageLabel = document.getElementById('image-label');
+            const imageCard = document.getElementById('image-status-card');
+
+            imageMetric.textContent = errorRate + '%';
+            imageLabel.textContent = 'Error rate';
+
+            if (results.failed === 0) {
+                imageMetric.className = 'metric ok';
+                imageCard.className = 'status-card';
+            } else {
+                imageMetric.className = 'metric error';
+                imageCard.className = 'status-card error';
+            }
+
+            // Counts
+            document.getElementById('images-ok').textContent = results.ok;
+            document.getElementById('images-failed').textContent = results.failed;
+
+            const failedCard = document.getElementById('images-failed-card');
+            const failedMetric = document.getElementById('images-failed');
+            if (results.failed > 0) {
+                failedCard.className = 'status-card error';
+                failedMetric.className = 'metric error';
+            } else {
+                failedCard.className = 'status-card';
+                failedMetric.className = 'metric ok';
+            }
+
+            // Error details
+            const errorDetails = document.getElementById('error-details');
+            const failedUrlsEl = document.getElementById('failed-urls');
+
+            if (results.failedUrls.length > 0) {
+                errorDetails.style.display = 'block';
+                failedUrlsEl.innerHTML = results.failedUrls
+                    .map(url => `<div class="error-item">GET /${url} - 404 Not Found</div>`)
+                    .join('');
+            } else {
+                errorDetails.style.display = 'none';
+            }
+
+            // Timestamp
+            document.getElementById('timestamp').textContent =
+                'Last checked: ' + new Date().toISOString();
+        }
+
+        // Run on load
+        runHealthCheck();
+
+        // Refresh every 30 seconds
+        setInterval(runHealthCheck, 30000);
+    </script>
+</body>
+</html>
