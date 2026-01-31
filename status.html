@@ -130,6 +130,14 @@
                 <div class="metric" id="images-failed">0</div>
                 <div class="metric-label">Failed to load (404)</div>
             </div>
+
+            <div class="status-card" id="transition-delay-card">
+                <h2>Auction Transition</h2>
+                <div class="metric" id="transition-delay-metric">--</div>
+                <div class="metric-label" id="transition-delay-label">
+                    Checking config...
+                </div>
+            </div>
         </div>
 
         <div id="error-details" style="display: none">
@@ -268,11 +276,124 @@
                     "Last checked: " + new Date().toISOString();
             }
 
-            // Run on load
-            runHealthCheck();
+            // Check auction transition delay config
+            async function checkTransitionDelay() {
+                const delayMetric = document.getElementById(
+                    "transition-delay-metric",
+                );
+                const delayLabel = document.getElementById(
+                    "transition-delay-label",
+                );
+                const delayCard = document.getElementById(
+                    "transition-delay-card",
+                );
+
+                try {
+                    const response = await fetch("/index.html");
+                    const html = await response.text();
+
+                    // Parse AUCTION_TRANSITION_DELAY from the source
+                    const match = html.match(
+                        /AUCTION_TRANSITION_DELAY\s*=\s*(\d+)/,
+                    );
+
+                    if (match) {
+                        const delay = parseInt(match[1], 10);
+                        const seconds = (delay / 1000).toFixed(1);
+
+                        delayMetric.textContent = seconds + "s";
+
+                        if (delay >= 1000 && delay <= 5000) {
+                            // Normal range: 1-5 seconds
+                            delayMetric.className = "metric ok";
+                            delayLabel.textContent =
+                                "Between auctions (normal)";
+                            delayCard.className = "status-card";
+                        } else if (delay > 5000 && delay <= 30000) {
+                            // Slow: 5-30 seconds
+                            delayMetric.className = "metric warning";
+                            delayLabel.textContent = "Between auctions (slow)";
+                            delayCard.className = "status-card warning";
+                        } else if (delay > 30000) {
+                            // Critical: over 30 seconds
+                            const minutes = (delay / 60000).toFixed(1);
+                            delayMetric.textContent = minutes + "m";
+                            delayMetric.className = "metric error";
+                            delayLabel.textContent = "Between auctions (STUCK)";
+                            delayCard.className = "status-card error";
+                        } else {
+                            // Too fast: under 1 second
+                            delayMetric.className = "metric warning";
+                            delayLabel.textContent =
+                                "Between auctions (too fast)";
+                            delayCard.className = "status-card warning";
+                        }
+                    } else {
+                        delayMetric.textContent = "???";
+                        delayMetric.className = "metric warning";
+                        delayLabel.textContent = "Config not found";
+                        delayCard.className = "status-card warning";
+                    }
+                } catch (err) {
+                    delayMetric.textContent = "ERR";
+                    delayMetric.className = "metric error";
+                    delayLabel.textContent = "Failed to check";
+                    delayCard.className = "status-card error";
+                }
+            }
+
+            // Update overall status to include transition delay
+            function updateOverallStatus() {
+                const overallEl = document.getElementById("overall-status");
+                const overallLabel = document.getElementById("overall-label");
+                const overallCard = document.getElementById(
+                    "overall-status-card",
+                );
+
+                const delayCard = document.getElementById(
+                    "transition-delay-card",
+                );
+                const hasDelayError = delayCard.classList.contains("error");
+                const hasDelayWarning = delayCard.classList.contains("warning");
+
+                if (
+                    results.failed === 0 &&
+                    !hasDelayError &&
+                    !hasDelayWarning
+                ) {
+                    overallEl.textContent = "HEALTHY";
+                    overallEl.className = "metric ok";
+                    overallLabel.textContent = "All systems operational";
+                    overallCard.className = "status-card";
+                } else if (
+                    results.failed === results.ok + results.failed ||
+                    hasDelayError
+                ) {
+                    overallEl.textContent = "CRITICAL";
+                    overallEl.className = "metric error";
+                    overallLabel.textContent = hasDelayError
+                        ? "Auction transitions stalled"
+                        : "Major asset loading failures";
+                    overallCard.className = "status-card error";
+                } else {
+                    overallEl.textContent = "DEGRADED";
+                    overallEl.className = "metric warning";
+                    overallLabel.textContent = "Some issues detected";
+                    overallCard.className = "status-card warning";
+                }
+            }
+
+            // Run all checks on load
+            async function runAllChecks() {
+                await runHealthCheck();
+                await checkTransitionDelay();
+                updateOverallStatus();
+            }
+
+            runAllChecks();
 
             // Refresh every 30 seconds
-            setInterval(runHealthCheck, 30000);
+            setInterval(runAllChecks, 30000);
         </script>
     </body>
 </html>

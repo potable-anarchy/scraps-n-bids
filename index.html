@@ -896,6 +896,9 @@
                 BiddingEngine,
                 DOMRender,
             ) {
+                // Delay between auctions (ms) - time to show winner banner
+                var AUCTION_TRANSITION_DELAY = 3000;
+
                 var stopCountdown = null;
                 var stopBidding = null;
                 var remainingSeconds = 0;
@@ -994,7 +997,7 @@
                         setTimeout(function () {
                             AuctionState.advanceToNextMeal();
                             startAuctionForCurrentMeal();
-                        }, 3000);
+                        }, AUCTION_TRANSITION_DELAY);
                     } catch (err) {
                         console.error(
                             "[Lifecycle] Error closing auction:",
