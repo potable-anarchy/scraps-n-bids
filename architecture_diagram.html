@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Build Scraps &amp; Bids the premiere auction house for leftover food</title>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default'});
+window.addEventListener('load', () => {
+    const moduleData = {"html_structure_HTML": {"filename": "html_structure_HTML.prompt", "priority": 1, "description": "Complete HTML5 document structure with semantic elements and stable IDs for web scraping. Includes header (site name, tagline, meal progress), main auction card (meal photo, name, description, category badge, countdown timer, current bid, status indicator), bid feed container, winner banner, and end screen. All elements use stable IDs from PRD \u00a76 (#meal-name, #meal-description, #current-bid, #countdown, #auction-status, #meal-progress, #winner-banner, .bid-entry, .bid-amount, .bid-name) to enable reliable rtrvr agent parsing.", "dependencies": [], "tags": ["html", "structure", "frontend"], "filepath": "index.html"}, "css_styles_CSS": {"filename": "css_styles_CSS.prompt", "priority": 2, "description": "Complete CSS embedded in <style> tag with warm color scheme (off-white/cream background), large prominent countdown timer, auction card layout using flexbox/grid, bid feed styling with slide-in animations, pulsing green 'LIVE' indicator, red countdown warning state (\u226410s), and 'SOLD' celebration styling. Includes CSS keyframe animations for bid entry transitions and status indicator pulsing. Mobile-friendly but optimized for desktop demo.", "dependencies": [], "tags": ["css", "styles", "frontend", "animations"], "filepath": "index.html"}, "meal_data_JavaScript": {"filename": "meal_data_JavaScript.prompt", "priority": 3, "description": "JavaScript IIFE module exporting MEALS constant array with 6 meal objects. Each object contains: id (unique slug), name (display name), description (1-2 sentences, self-deprecating), category ('asian'|'mexican'|'american'|'italian'|'other'), startingBid (USD number), photo (emoji string), auctionDuration (seconds). Order in array determines auction sequence. Meals: Tuesday's Pad Thai (asian, $1.50, 45s), Half a Burrito (mexican, $2.00, 40s), Mystery Stir Fry (asian, $1.00, 35s), Sad Desk Salad (american, $0.75, 40s), Quarter Pepperoni Pizza (american, $3.00, 50s), Leftover Lasagna Block (italian, $2.50, 45s).", "dependencies": [], "tags": ["javascript", "data", "module"], "filepath": "index.html"}, "utility_helpers_JavaScript": {"filename": "utility_helpers_JavaScript.prompt", "priority": 4, "description": "JavaScript IIFE module exporting utility functions: formatCurrency(amount) for USD formatting with 2 decimals, formatRelativeTime(timestamp) for relative time strings ('just now', '2s ago', etc.), randomInt(min, max) for inclusive random integer generation, randomChoice(array) for random array element selection, randomBidIncrement(isJump) for bid amount calculation ($0.10-$0.75 normal, $1.00-$2.00 jump bids). No dependencies, pure functions with no side effects.", "dependencies": [], "tags": ["javascript", "utilities", "module"], "filepath": "index.html"}, "auction_state_JavaScript": {"filename": "auction_state_JavaScript.prompt", "priority": 5, "description": "JavaScript IIFE module exporting AuctionState singleton object and state mutation functions. State structure: currentMealIndex (number, index into MEALS array), bids (Bid[] array with {bidder: string, amount: number, timestamp: number}), startedAt (number, Date.now() timestamp), status ('active'|'sold'|'complete'). Exports functions: initAuction(), addBid(bidder, amount), getCurrentMeal(), getHighestBid(), advanceToNextMeal(), markAsSold(), isComplete(). All state mutations are synchronous and logged to console for debugging.", "dependencies": ["meal_data_JavaScript.prompt"], "tags": ["javascript", "state", "module"], "filepath": "index.html"}, "timer_module_JavaScript": {"filename": "timer_module_JavaScript.prompt", "priority": 6, "description": "JavaScript IIFE module implementing countdown timer with setInterval. Exports startCountdown(durationSeconds, onTick, onComplete) function that ticks every 1000ms, calls onTick(remainingSeconds) callback each tick, and calls onComplete() when reaching zero. Automatically clears interval on completion. Handles edge case of zero/negative duration. Returns stopCountdown() function for manual cancellation. Used for auction countdown timer - onTick updates #countdown element and changes color to red when remainingSeconds \u2264 10.", "dependencies": ["utility_helpers_JavaScript.prompt"], "tags": ["javascript", "timer", "module"], "filepath": "index.html"}, "bidding_engine_JavaScript": {"filename": "bidding_engine_JavaScript.prompt", "priority": 7, "description": "JavaScript IIFE module implementing synthesized bidding logic with randomized timing. Exports startBiddingEngine(onBid) function that fires fake bids using setTimeout. Bidder names pool: ['FoodieGregory', 'BargainBeth', 'SnackAttack99', 'ThriftyTina', 'LunchLarry', 'DealDave', 'MealStealer', 'CheapEats_Carol', 'BidKing_Tom', 'LeftoverLove', 'BargainHunter_X', 'PricePete']. Timing: first bid 3-8s after start, subsequent bids 2-6s apart, last 10 seconds ramp up to 1-3s intervals. Bid amounts: increment current high bid by $0.10-$0.75 (normal) or $1.00-$2.00 (jump bid, ~20% chance). Calls onBid(bidder, amount) callback. Returns stopBiddingEngine() function. Stops automatically when auction status !== 'active'.", "dependencies": ["utility_helpers_JavaScript.prompt", "auction_state_JavaScript.prompt"], "tags": ["javascript", "bidding", "module", "engine"], "filepath": "index.html"}, "dom_render_JavaScript": {"filename": "dom_render_JavaScript.prompt", "priority": 8, "description": "JavaScript IIFE module managing all DOM manipulation. Exports functions: renderAuctionCard(meal, highestBid, countdown, status) updates #meal-name, #meal-description, #current-bid, #countdown, #auction-status elements; renderBidFeed(bids) rebuilds .bid-entry elements using DocumentFragment for performance, newest first, with slide-in animation; renderWinnerBanner(bidder, meal, amount) shows #winner-banner with celebration emoji; renderEndScreen() displays 'That's all folks' message; updateMealProgress(current, total) updates #meal-progress; updateCountdownColor(remaining) applies red class when \u226410s. Caches DOM selectors for performance. All rendering is synchronous and uses textContent (not innerHTML) to prevent XSS.", "dependencies": ["utility_helpers_JavaScript.prompt", "auction_state_JavaScript.prompt"], "tags": ["javascript", "dom", "rendering", "module"], "filepath": "index.html"}, "auction_lifecycle_JavaScript": {"filename": "auction_lifecycle_JavaScript.prompt", "priority": 9, "description": "JavaScript IIFE module coordinating the auction flow. Exports init() function called on DOMContentLoaded. Implements state machine: Page Load \u2192 initialize meal database, start auction for meal[0], start countdown, start bidding engine, render initial UI. During Auction \u2192 countdown ticks every second, synthesized bids fire per timing rules, each bid updates #current-bid and bid feed, countdown turns red at \u226410s. Auction Close \u2192 countdown hits 0, stop bidding, set status 'sold', display winner banner, wait 3s, advance to next meal or show end screen. Handles all module coordination, error boundaries with console.error logging. No global scope pollution - all initialization via DOMContentLoaded event listener.", "dependencies": ["meal_data_JavaScript.prompt", "utility_helpers_JavaScript.prompt", "auction_state_JavaScript.prompt", "timer_module_JavaScript.prompt", "bidding_engine_JavaScript.prompt", "dom_render_JavaScript.prompt"], "tags": ["javascript", "orchestration", "lifecycle", "module"], "filepath": "index.html"}};
+    
+    // Add hover listeners to all nodes
+    setTimeout(() => {
+        const nodes = document.querySelectorAll('.node');
+        nodes.forEach(node => {
+            const text = node.querySelector('.nodeLabel');
+            if (!text) return;
+            
+            const nodeText = text.textContent.trim();
+            const moduleId = nodeText.split(' ')[0];
+            const data = moduleData[moduleId];
+            
+            if (data) {
+                node.style.cursor = 'pointer';
+                
+                node.addEventListener('mouseenter', (e) => {
+                    showTooltip(e, data);
+                });
+                
+                node.addEventListener('mouseleave', () => {
+                    hideTooltip();
+                });
+            }
+        });
+    }, 500);
+});
+function showTooltip(e, data) {
+    hideTooltip();
+    
+    const tooltip = document.createElement('div');
+    tooltip.id = 'module-tooltip';
+    tooltip.innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px;font-size:1.1em;">${data.filename}</div>
+        <div style="margin-bottom:6px;"><strong>Priority:</strong> ${data.priority}</div>
+        <div style="margin-bottom:6px;"><strong>Path:</strong> ${data.filepath}</div>
+        <div style="margin-bottom:6px;"><strong>Tags:</strong> ${data.tags.join(', ')}</div>
+        <div style="margin-bottom:6px;"><strong>Dependencies:</strong> ${data.dependencies.length > 0 ? data.dependencies.join(', ') : 'None'}</div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ddd;font-size:0.9em;color:#444;">${data.description}</div>
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    const rect = e.target.closest('.node').getBoundingClientRect();
+    tooltip.style.left = rect.right + 10 + 'px';
+    tooltip.style.top = rect.top + window.scrollY + 'px';
+}
+function hideTooltip() {
+    const existing = document.getElementById('module-tooltip');
+    if (existing) existing.remove();
+}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#fff;color:#000;padding:2rem;max-width:1400px;margin:0 auto}
+h1{font-size:2rem;font-weight:600;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #000}
+.diagram{border:1px solid #000;padding:2rem;margin:2rem 0;overflow-x:auto;position:relative}
+.mermaid{display:flex;justify-content:center}
+#module-tooltip{
+    position:absolute;
+    background:#fff;
+    border:2px solid #000;
+    padding:1rem;
+    max-width:400px;
+    z-index:1000;
+    box-shadow:4px 4px 0 rgba(0,0,0,0.1);
+    font-size:0.9rem;
+    line-height:1.5;
+}
+.node{transition:opacity 0.2s}
+.node:hover{opacity:0.8}
+</style></head><body>
+<h1>Build Scraps &amp; Bids the premiere auction house for leftover food</h1>
+<div class="diagram"><pre class="mermaid">flowchart TB
+        PRD["Build Scraps & Bids the premiere auction house for leftover food"]
+    
+    subgraph Frontend
+        html_structure_HTML["html_structure_HTML (1)"]
+        css_styles_CSS["css_styles_CSS (2)"]
+    end
+    
+    subgraph Shared
+        meal_data_JavaScript["meal_data_JavaScript (3)"]
+        utility_helpers_JavaScript["utility_helpers_JavaScript (4)"]
+        auction_state_JavaScript["auction_state_JavaScript (5)"]
+        timer_module_JavaScript["timer_module_JavaScript (6)"]
+        bidding_engine_JavaScript["bidding_engine_JavaScript (7)"]
+        dom_render_JavaScript["dom_render_JavaScript (8)"]
+        auction_lifecycle_JavaScript["auction_lifecycle_JavaScript (9)"]
+    end
+    
+    PRD --> Frontend
+
+    auction_state_JavaScript -->|uses| meal_data_JavaScript
+    timer_module_JavaScript -->|uses| utility_helpers_JavaScript
+    bidding_engine_JavaScript -->|uses| utility_helpers_JavaScript
+    bidding_engine_JavaScript -->|uses| auction_state_JavaScript
+    dom_render_JavaScript -->|uses| utility_helpers_JavaScript
+    dom_render_JavaScript -->|uses| auction_state_JavaScript
+    auction_lifecycle_JavaScript -->|uses| meal_data_JavaScript
+    auction_lifecycle_JavaScript -->|uses| utility_helpers_JavaScript
+    auction_lifecycle_JavaScript -->|uses| auction_state_JavaScript
+    auction_lifecycle_JavaScript -->|uses| timer_module_JavaScript
+    auction_lifecycle_JavaScript -->|uses| bidding_engine_JavaScript
+    auction_lifecycle_JavaScript -->|uses| dom_render_JavaScript
+    
+    classDef frontend fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    classDef backend fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    classDef shared fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
+    classDef system fill:#E0E0E0,stroke:#616161,stroke-width:3px
+    
+    class html_structure_HTML,css_styles_CSS frontend
+    class meal_data_JavaScript,utility_helpers_JavaScript,auction_state_JavaScript,timer_module_JavaScript,bidding_engine_JavaScript,dom_render_JavaScript,auction_lifecycle_JavaScript shared
+    class PRD system</pre></div>
+</body></html>

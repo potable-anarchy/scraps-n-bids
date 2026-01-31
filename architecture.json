@@ -1,0 +1,446 @@
+[
+  {
+    "reason": "HTML structure provides the semantic layout with agent-friendly DOM elements",
+    "description": "Complete HTML5 document structure with semantic elements and stable IDs for web scraping. Includes header (site name, tagline, meal progress), main auction card (meal photo, name, description, category badge, countdown timer, current bid, status indicator), bid feed container, winner banner, and end screen. All elements use stable IDs from PRD \u00a76 (#meal-name, #meal-description, #current-bid, #countdown, #auction-status, #meal-progress, #winner-banner, .bid-entry, .bid-amount, .bid-name) to enable reliable rtrvr agent parsing.",
+    "dependencies": [],
+    "priority": 1,
+    "filename": "html_structure_HTML.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "html",
+      "structure",
+      "frontend"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element",
+        "purpose": "HTML elements reference for semantic markup"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id",
+        "purpose": "Using stable ID attributes for DOM element identification"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Learn/Accessibility/HTML",
+        "purpose": "Semantic HTML best practices for accessibility"
+      }
+    ],
+    "interface": {
+      "type": "page",
+      "page": {
+        "route": "/",
+        "params": [],
+        "dataSources": []
+      }
+    }
+  },
+  {
+    "reason": "Embedded CSS styles create the visual design with animations and responsive layout",
+    "description": "Complete CSS embedded in <style> tag with warm color scheme (off-white/cream background), large prominent countdown timer, auction card layout using flexbox/grid, bid feed styling with slide-in animations, pulsing green 'LIVE' indicator, red countdown warning state (\u226410s), and 'SOLD' celebration styling. Includes CSS keyframe animations for bid entry transitions and status indicator pulsing. Mobile-friendly but optimized for desktop demo.",
+    "dependencies": [],
+    "priority": 2,
+    "filename": "css_styles_CSS.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "css",
+      "styles",
+      "frontend",
+      "animations"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox",
+        "purpose": "Flexbox layout for auction card and bid feed"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout",
+        "purpose": "CSS Grid for overall page layout"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations",
+        "purpose": "CSS animations for bid entry transitions and status indicators"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes",
+        "purpose": "Keyframe animations for pulsing and sliding effects"
+      }
+    ],
+    "interface": {
+      "type": "config",
+      "config": {
+        "keys": [
+          {
+            "name": "background-color",
+            "type": "color",
+            "default": "off-white/cream",
+            "required": true,
+            "source": "file"
+          },
+          {
+            "name": "timer-color-warning",
+            "type": "color",
+            "default": "red",
+            "required": true,
+            "source": "file"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Meal data module contains the hardcoded database of 6 meals",
+    "description": "JavaScript IIFE module exporting MEALS constant array with 6 meal objects. Each object contains: id (unique slug), name (display name), description (1-2 sentences, self-deprecating), category ('asian'|'mexican'|'american'|'italian'|'other'), startingBid (USD number), photo (emoji string), auctionDuration (seconds). Order in array determines auction sequence. Meals: Tuesday's Pad Thai (asian, $1.50, 45s), Half a Burrito (mexican, $2.00, 40s), Mystery Stir Fry (asian, $1.00, 35s), Sad Desk Salad (american, $0.75, 40s), Quarter Pepperoni Pizza (american, $3.00, 50s), Leftover Lasagna Block (italian, $2.50, 45s).",
+    "dependencies": [],
+    "priority": 3,
+    "filename": "meal_data_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "data",
+      "module"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Glossary/IIFE",
+        "purpose": "IIFE pattern for module encapsulation"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules",
+        "purpose": "JavaScript module pattern guide"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "MEALS",
+            "signature": "const MEALS: Meal[]",
+            "returns": "Array of 6 meal objects"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Utility helpers provide formatting and random selection functions",
+    "description": "JavaScript IIFE module exporting utility functions: formatCurrency(amount) for USD formatting with 2 decimals, formatRelativeTime(timestamp) for relative time strings ('just now', '2s ago', etc.), randomInt(min, max) for inclusive random integer generation, randomChoice(array) for random array element selection, randomBidIncrement(isJump) for bid amount calculation ($0.10-$0.75 normal, $1.00-$2.00 jump bids). No dependencies, pure functions with no side effects.",
+    "dependencies": [],
+    "priority": 4,
+    "filename": "utility_helpers_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "utilities",
+      "module"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random",
+        "purpose": "Math.random for random number generation"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now",
+        "purpose": "Date.now for timestamp generation"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "formatCurrency",
+            "signature": "formatCurrency(amount: number): string",
+            "returns": "Formatted USD string"
+          },
+          {
+            "name": "formatRelativeTime",
+            "signature": "formatRelativeTime(timestamp: number): string",
+            "returns": "Relative time string"
+          },
+          {
+            "name": "randomInt",
+            "signature": "randomInt(min: number, max: number): number",
+            "returns": "Random integer"
+          },
+          {
+            "name": "randomChoice",
+            "signature": "randomChoice(array: any[]): any",
+            "returns": "Random array element"
+          },
+          {
+            "name": "randomBidIncrement",
+            "signature": "randomBidIncrement(isJump: boolean): number",
+            "returns": "Bid increment amount"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Auction state module maintains centralized application state",
+    "description": "JavaScript IIFE module exporting AuctionState singleton object and state mutation functions. State structure: currentMealIndex (number, index into MEALS array), bids (Bid[] array with {bidder: string, amount: number, timestamp: number}), startedAt (number, Date.now() timestamp), status ('active'|'sold'|'complete'). Exports functions: initAuction(), addBid(bidder, amount), getCurrentMeal(), getHighestBid(), advanceToNextMeal(), markAsSold(), isComplete(). All state mutations are synchronous and logged to console for debugging.",
+    "dependencies": [
+      "meal_data_JavaScript.prompt"
+    ],
+    "priority": 5,
+    "filename": "auction_state_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "state",
+      "module"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Glossary/IIFE",
+        "purpose": "IIFE pattern for state encapsulation"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "initAuction",
+            "signature": "initAuction(): void",
+            "returns": "void",
+            "sideEffects": "Resets state to first meal"
+          },
+          {
+            "name": "addBid",
+            "signature": "addBid(bidder: string, amount: number): void",
+            "returns": "void",
+            "sideEffects": "Appends bid to state"
+          },
+          {
+            "name": "getCurrentMeal",
+            "signature": "getCurrentMeal(): Meal",
+            "returns": "Current meal object"
+          },
+          {
+            "name": "getHighestBid",
+            "signature": "getHighestBid(): number",
+            "returns": "Highest bid amount or starting bid"
+          },
+          {
+            "name": "advanceToNextMeal",
+            "signature": "advanceToNextMeal(): boolean",
+            "returns": "true if more meals exist, false otherwise"
+          },
+          {
+            "name": "markAsSold",
+            "signature": "markAsSold(): void",
+            "returns": "void",
+            "sideEffects": "Sets status to 'sold'"
+          },
+          {
+            "name": "isComplete",
+            "signature": "isComplete(): boolean",
+            "returns": "true if all meals auctioned"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Timer module manages countdown logic and triggers auction close",
+    "description": "JavaScript IIFE module implementing countdown timer with setInterval. Exports startCountdown(durationSeconds, onTick, onComplete) function that ticks every 1000ms, calls onTick(remainingSeconds) callback each tick, and calls onComplete() when reaching zero. Automatically clears interval on completion. Handles edge case of zero/negative duration. Returns stopCountdown() function for manual cancellation. Used for auction countdown timer - onTick updates #countdown element and changes color to red when remainingSeconds \u2264 10.",
+    "dependencies": [
+      "utility_helpers_JavaScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "timer_module_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "timer",
+      "module"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/setInterval",
+        "purpose": "setInterval API for countdown ticking"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/clearInterval",
+        "purpose": "clearInterval for timer cleanup"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "startCountdown",
+            "signature": "startCountdown(durationSeconds: number, onTick: (remaining: number) => void, onComplete: () => void): () => void",
+            "returns": "stopCountdown function",
+            "sideEffects": "Creates interval timer"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Bidding engine synthesizes fake bids to simulate active marketplace",
+    "description": "JavaScript IIFE module implementing synthesized bidding logic with randomized timing. Exports startBiddingEngine(onBid) function that fires fake bids using setTimeout. Bidder names pool: ['FoodieGregory', 'BargainBeth', 'SnackAttack99', 'ThriftyTina', 'LunchLarry', 'DealDave', 'MealStealer', 'CheapEats_Carol', 'BidKing_Tom', 'LeftoverLove', 'BargainHunter_X', 'PricePete']. Timing: first bid 3-8s after start, subsequent bids 2-6s apart, last 10 seconds ramp up to 1-3s intervals. Bid amounts: increment current high bid by $0.10-$0.75 (normal) or $1.00-$2.00 (jump bid, ~20% chance). Calls onBid(bidder, amount) callback. Returns stopBiddingEngine() function. Stops automatically when auction status !== 'active'.",
+    "dependencies": [
+      "utility_helpers_JavaScript.prompt",
+      "auction_state_JavaScript.prompt"
+    ],
+    "priority": 7,
+    "filename": "bidding_engine_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "bidding",
+      "module",
+      "engine"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/setTimeout",
+        "purpose": "setTimeout for randomized bid timing"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random",
+        "purpose": "Math.random for bid randomization"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "startBiddingEngine",
+            "signature": "startBiddingEngine(onBid: (bidder: string, amount: number) => void): () => void",
+            "returns": "stopBiddingEngine function",
+            "sideEffects": "Creates randomized timers, fires bid callbacks"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "DOM render module handles all UI updates and element manipulation",
+    "description": "JavaScript IIFE module managing all DOM manipulation. Exports functions: renderAuctionCard(meal, highestBid, countdown, status) updates #meal-name, #meal-description, #current-bid, #countdown, #auction-status elements; renderBidFeed(bids) rebuilds .bid-entry elements using DocumentFragment for performance, newest first, with slide-in animation; renderWinnerBanner(bidder, meal, amount) shows #winner-banner with celebration emoji; renderEndScreen() displays 'That's all folks' message; updateMealProgress(current, total) updates #meal-progress; updateCountdownColor(remaining) applies red class when \u226410s. Caches DOM selectors for performance. All rendering is synchronous and uses textContent (not innerHTML) to prevent XSS.",
+    "dependencies": [
+      "utility_helpers_JavaScript.prompt",
+      "auction_state_JavaScript.prompt"
+    ],
+    "priority": 8,
+    "filename": "dom_render_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "dom",
+      "rendering",
+      "module"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById",
+        "purpose": "getElementById for stable DOM element access"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector",
+        "purpose": "querySelector for CSS selector-based element access"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
+        "purpose": "DocumentFragment for efficient batch DOM updates"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Element/textContent",
+        "purpose": "textContent for safe text updates without XSS risk"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "renderAuctionCard",
+            "signature": "renderAuctionCard(meal: Meal, highestBid: number, countdown: number, status: string): void",
+            "returns": "void",
+            "sideEffects": "Updates auction card DOM elements"
+          },
+          {
+            "name": "renderBidFeed",
+            "signature": "renderBidFeed(bids: Bid[]): void",
+            "returns": "void",
+            "sideEffects": "Rebuilds bid feed with animations"
+          },
+          {
+            "name": "renderWinnerBanner",
+            "signature": "renderWinnerBanner(bidder: string, meal: Meal, amount: number): void",
+            "returns": "void",
+            "sideEffects": "Displays winner banner"
+          },
+          {
+            "name": "renderEndScreen",
+            "signature": "renderEndScreen(): void",
+            "returns": "void",
+            "sideEffects": "Displays end screen message"
+          },
+          {
+            "name": "updateMealProgress",
+            "signature": "updateMealProgress(current: number, total: number): void",
+            "returns": "void",
+            "sideEffects": "Updates meal progress indicator"
+          },
+          {
+            "name": "updateCountdownColor",
+            "signature": "updateCountdownColor(remaining: number): void",
+            "returns": "void",
+            "sideEffects": "Applies red class to countdown if \u226410s"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Auction lifecycle orchestrates all modules and controls state transitions",
+    "description": "JavaScript IIFE module coordinating the auction flow. Exports init() function called on DOMContentLoaded. Implements state machine: Page Load \u2192 initialize meal database, start auction for meal[0], start countdown, start bidding engine, render initial UI. During Auction \u2192 countdown ticks every second, synthesized bids fire per timing rules, each bid updates #current-bid and bid feed, countdown turns red at \u226410s. Auction Close \u2192 countdown hits 0, stop bidding, set status 'sold', display winner banner, wait 3s, advance to next meal or show end screen. Handles all module coordination, error boundaries with console.error logging. No global scope pollution - all initialization via DOMContentLoaded event listener.",
+    "dependencies": [
+      "meal_data_JavaScript.prompt",
+      "utility_helpers_JavaScript.prompt",
+      "auction_state_JavaScript.prompt",
+      "timer_module_JavaScript.prompt",
+      "bidding_engine_JavaScript.prompt",
+      "dom_render_JavaScript.prompt"
+    ],
+    "priority": 9,
+    "filename": "auction_lifecycle_JavaScript.prompt",
+    "filepath": "index.html",
+    "tags": [
+      "javascript",
+      "orchestration",
+      "lifecycle",
+      "module"
+    ],
+    "context_urls": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event",
+        "purpose": "DOMContentLoaded event for initialization timing"
+      },
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/setTimeout",
+        "purpose": "setTimeout for winner banner delay and transitions"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "init",
+            "signature": "init(): void",
+            "returns": "void",
+            "sideEffects": "Initializes entire application, starts auction lifecycle"
+          }
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,87 @@
+version: "1.0"
+
+contexts:
+  # ============================================================
+  # HTML STRUCTURE
+  # ============================================================
+
+  html_structure:
+    paths: ["*html_structure*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  # ============================================================
+  # CSS STYLES
+  # ============================================================
+
+  css_styles:
+    paths: ["*css_styles*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  # ============================================================
+  # JAVASCRIPT MODULES
+  # ============================================================
+
+  meal_data:
+    paths: ["*meal_data*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  utility_helpers:
+    paths: ["*utility_helpers*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  auction_state:
+    paths: ["*auction_state*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  timer_module:
+    paths: ["*timer_module*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  bidding_engine:
+    paths: ["*bidding_engine*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  dom_render:
+    paths: ["*dom_render*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  auction_lifecycle:
+    paths: ["*auction_lifecycle*"]
+    defaults:
+      outputs:
+        code:
+          path: "index.html"
+
+  # ============================================================
+  # DEFAULT FALLBACK
+  # ============================================================
+  # CRITICAL: prompts_dir goes ONLY here, not in other contexts!
+
+  default:
+    defaults:
+      prompts_dir: "prompts/"
+      generate_output_path: "./"
