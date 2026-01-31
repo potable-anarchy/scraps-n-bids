@@ -70,12 +70,6 @@
                 margin-top: 0.25rem;
             }
 
-            #meal-progress {
-                font-size: 0.85rem;
-                color: #999;
-                margin-top: 0.5rem;
-            }
-
             main {
                 width: 100%;
                 max-width: 640px;
@@ -366,7 +360,6 @@
         <header>
             <h1>Scraps n' Bids</h1>
             <p class="tagline">Live auctions for unfinished meals</p>
-            <p id="meal-progress">Loading...</p>
         </header>
 
         <main>
@@ -584,20 +577,16 @@
                 }
 
                 function advanceToNextMeal() {
-                    state.currentMealIndex++;
-                    if (state.currentMealIndex >= MEALS.length) {
-                        state.status = "complete";
-                        console.log("[AuctionState] All meals auctioned");
-                        return false;
-                    }
+                    state.currentMealIndex = Math.floor(
+                        Math.random() * MEALS.length,
+                    );
                     state.bids = [];
                     state.startedAt = Date.now();
                     state.status = "active";
                     console.log(
-                        "[AuctionState] Advanced to:",
+                        "[AuctionState] Next meal:",
                         MEALS[state.currentMealIndex].name,
                     );
-                    return true;
                 }
 
                 function markAsSold() {
@@ -919,7 +908,6 @@
 
                         DOMRender.showAuctionUI();
                         DOMRender.hideWinnerBanner();
-                        DOMRender.updateMealProgress(index + 1, MEALS.length);
                         DOMRender.renderAuctionCard(
                             meal,
                             AuctionState.getHighestBid(),
@@ -1004,15 +992,8 @@
                         );
 
                         setTimeout(function () {
-                            var hasMore = AuctionState.advanceToNextMeal();
-                            if (hasMore) {
-                                startAuctionForCurrentMeal();
-                            } else {
-                                DOMRender.renderEndScreen();
-                                console.log(
-                                    "[Lifecycle] All auctions complete",
-                                );
-                            }
+                            AuctionState.advanceToNextMeal();
+                            startAuctionForCurrentMeal();
                         }, 3000);
                     } catch (err) {
                         console.error(
