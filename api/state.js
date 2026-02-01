@@ -1,5 +1,14 @@
 import { createClient } from "@vercel/kv";
 
+console.log(
+  "[API] KV_REST_API_URL:",
+  process.env.KV_REST_API_URL ? "set" : "NOT SET",
+);
+console.log(
+  "[API] KV_REST_API_TOKEN:",
+  process.env.KV_REST_API_TOKEN ? "set" : "NOT SET",
+);
+
 const kv = createClient({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
