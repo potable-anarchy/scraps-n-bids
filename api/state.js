@@ -1,18 +1,19 @@
-import { createClient } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
-console.log(
-  "[API] KV_REST_API_URL:",
-  process.env.KV_REST_API_URL ? "set" : "NOT SET",
-);
-console.log(
-  "[API] KV_REST_API_TOKEN:",
-  process.env.KV_REST_API_TOKEN ? "set" : "NOT SET",
-);
+let kv = null;
 
-const kv = createClient({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
+function getKV() {
+  if (!kv) {
+    console.log("[API] Creating Redis client");
+    console.log("[API] URL:", process.env.KV_REST_API_URL || "NOT SET");
+
+    kv = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    });
+  }
+  return kv;
+}
 
 // Meal data (same as client)
 const MEALS = [
@@ -118,7 +119,7 @@ async function initializeAuction() {
     winner: null,
   };
 
-  await kv.set("auction_state", state);
+  await getKV().set("auction_state", JSON.stringify(state));
   return state;
 }
 
@@ -134,7 +135,7 @@ async function tickAuction(state) {
       state.winner = state.bids[state.bids.length - 1];
     }
     state.soldAt = now;
-    await kv.set("auction_state", state);
+    await getKV().set("auction_state", JSON.stringify(state));
     return state;
   }
 
@@ -176,7 +177,7 @@ async function tickAuction(state) {
         timestamp: now,
       });
       state.lastBidAt = now;
-      await kv.set("auction_state", state);
+      await getKV().set("auction_state", JSON.stringify(state));
     }
   }
 
@@ -194,7 +195,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    let state = await kv.get("auction_state");
+    let stateRaw = await getKV().get("auction_state");
+    let state = stateRaw
+      ? typeof stateRaw === "string"
+        ? JSON.parse(stateRaw)
+        : stateRaw
+      : null;
 
     console.log("[API] Got state from KV:", state ? "exists" : "null");
 
