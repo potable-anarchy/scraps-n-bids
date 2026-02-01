@@ -400,414 +400,119 @@
         </main>
 
         <!-- ============================================================
-       JAVASCRIPT MODULES (IIFE pattern, dependency order)
+       JAVASCRIPT: POLLING CLIENT
+       Fetches shared auction state from /api/state
        ============================================================ -->
         <script>
-            // ============================================================
-            // MODULE 3: MEAL DATA
-            // Hardcoded array of 6 unfinished meals
-            // ============================================================
-            var ScrapsNBids = ScrapsNBids || {};
-
-            ScrapsNBids.MEALS = [
-                {
-                    id: "tuesdays-pad-thai",
-                    name: "Tuesday's Pad Thai",
-                    description:
-                        "Was going to finish it but then someone mentioned cake in the break room.",
-                    category: "asian",
-                    startingBid: 1.5,
-                    photo: "images/pad-thai.png",
-                    auctionDuration: 45,
-                },
-                {
-                    id: "half-a-burrito",
-                    name: "Half a Burrito",
-                    description:
-                        "The good half. Someone already took the end with all the sour cream.",
-                    category: "mexican",
-                    startingBid: 2.0,
-                    photo: "images/burrito.png",
-                    auctionDuration: 40,
-                },
-                {
-                    id: "mystery-stir-fry",
-                    name: "Mystery Stir Fry",
-                    description:
-                        "It was definitely vegetables at some point. Could be anything now.",
-                    category: "asian",
-                    startingBid: 1.0,
-                    photo: "images/stir-fry.png",
-                    auctionDuration: 35,
-                },
-                {
-                    id: "sad-desk-salad",
-                    name: "Sad Desk Salad",
-                    description:
-                        "Wilting gracefully since 11:30 AM. Dressing on the side (missing).",
-                    category: "american",
-                    startingBid: 0.75,
-                    photo: "images/salad.png",
-                    auctionDuration: 40,
-                },
-                {
-                    id: "quarter-pepperoni-pizza",
-                    name: "Quarter Pepperoni Pizza",
-                    description:
-                        "Three slices already claimed. This is the survivor. Slightly cold.",
-                    category: "american",
-                    startingBid: 3.0,
-                    photo: "images/pizza.png",
-                    auctionDuration: 50,
-                },
-                {
-                    id: "leftover-lasagna-block",
-                    name: "Leftover Lasagna Block",
-                    description:
-                        "A dense cube of layered perfection. Microwave at your own risk.",
-                    category: "italian",
-                    startingBid: 2.5,
-                    photo: "images/lasagna.png",
-                    auctionDuration: 45,
-                },
-            ];
-
-            // ============================================================
-            // MODULE 4: UTILITY HELPERS
-            // Pure formatting and random functions
-            // ============================================================
-            ScrapsNBids.Utils = (function () {
-                function formatCurrency(amount) {
-                    return "$" + amount.toFixed(2);
-                }
-
-                function formatRelativeTime(timestamp) {
-                    var seconds = Math.floor((Date.now() - timestamp) / 1000);
-                    if (seconds < 2) return "just now";
-                    if (seconds < 60) return seconds + "s ago";
-                    var minutes = Math.floor(seconds / 60);
-                    return minutes + "m ago";
-                }
-
-                function randomInt(min, max) {
-                    return Math.floor(Math.random() * (max - min + 1)) + min;
-                }
-
-                function randomChoice(array) {
-                    return array[Math.floor(Math.random() * array.length)];
-                }
-
-                function randomBidIncrement(isJump) {
-                    if (isJump) {
-                        return +(1.0 + Math.random() * 1.0).toFixed(2);
-                    }
-                    return +(0.1 + Math.random() * 0.65).toFixed(2);
-                }
-
-                return {
-                    formatCurrency: formatCurrency,
-                    formatRelativeTime: formatRelativeTime,
-                    randomInt: randomInt,
-                    randomChoice: randomChoice,
-                    randomBidIncrement: randomBidIncrement,
-                };
-            })();
-
-            // ============================================================
-            // MODULE 5: AUCTION STATE
-            // Centralized state management singleton
-            // Depends on: meal_data
-            // ============================================================
-            ScrapsNBids.AuctionState = (function (MEALS) {
-                var state = {
-                    currentMealIndex: 0,
-                    bids: [],
-                    startedAt: 0,
-                    status: "active",
-                };
-
-                function initAuction() {
-                    state.currentMealIndex = Math.floor(
-                        Math.random() * MEALS.length,
-                    );
-                    state.bids = [];
-                    state.startedAt = Date.now();
-                    state.status = "active";
-                    console.log(
-                        "[AuctionState] Initialized auction for:",
-                        MEALS[state.currentMealIndex].name,
-                    );
-                }
-
-                function addBid(bidder, amount) {
-                    var bid = {
-                        bidder: bidder,
-                        amount: amount,
-                        timestamp: Date.now(),
-                    };
-                    state.bids.push(bid);
-                    console.log(
-                        "[AuctionState] Bid:",
-                        bidder,
-                        ScrapsNBids.Utils.formatCurrency(amount),
-                    );
-                }
-
-                function getCurrentMeal() {
-                    return MEALS[state.currentMealIndex];
-                }
-
-                function getHighestBid() {
-                    if (state.bids.length === 0) {
-                        return getCurrentMeal().startingBid;
-                    }
-                    return state.bids[state.bids.length - 1].amount;
-                }
-
-                function getBids() {
-                    return state.bids.slice();
-                }
-
-                function getStatus() {
-                    return state.status;
-                }
-
-                function getCurrentMealIndex() {
-                    return state.currentMealIndex;
-                }
-
-                function advanceToNextMeal() {
-                    state.currentMealIndex = Math.floor(
-                        Math.random() * MEALS.length,
-                    );
-                    state.bids = [];
-                    state.startedAt = Date.now();
-                    state.status = "active";
-                    console.log(
-                        "[AuctionState] Next meal:",
-                        MEALS[state.currentMealIndex].name,
-                    );
-                }
-
-                function markAsSold() {
-                    state.status = "sold";
-                    console.log("[AuctionState] Marked as SOLD");
-                }
-
-                function isComplete() {
-                    return state.status === "complete";
-                }
-
-                function getWinner() {
-                    if (state.bids.length === 0) return null;
-                    return state.bids[state.bids.length - 1];
-                }
-
-                return {
-                    initAuction: initAuction,
-                    addBid: addBid,
-                    getCurrentMeal: getCurrentMeal,
-                    getHighestBid: getHighestBid,
-                    getBids: getBids,
-                    getStatus: getStatus,
-                    getCurrentMealIndex: getCurrentMealIndex,
-                    advanceToNextMeal: advanceToNextMeal,
-                    markAsSold: markAsSold,
-                    isComplete: isComplete,
-                    getWinner: getWinner,
-                };
-            })(ScrapsNBids.MEALS);
-
-            // ============================================================
-            // MODULE 6: TIMER MODULE
-            // Countdown logic with setInterval
-            // Depends on: utility_helpers
-            // ============================================================
-            ScrapsNBids.Timer = (function () {
-                function startCountdown(durationSeconds, onTick, onComplete) {
-                    var remaining = durationSeconds;
-                    if (remaining <= 0) {
-                        onComplete();
-                        return function () {};
-                    }
-
-                    onTick(remaining);
-
-                    var intervalId = setInterval(function () {
-                        remaining--;
-                        if (remaining <= 0) {
-                            clearInterval(intervalId);
-                            onTick(0);
-                            onComplete();
-                        } else {
-                            onTick(remaining);
-                        }
-                    }, 1000);
-
-                    return function stopCountdown() {
-                        clearInterval(intervalId);
-                    };
-                }
-
-                return {
-                    startCountdown: startCountdown,
-                };
-            })();
-
-            // ============================================================
-            // MODULE 7: BIDDING ENGINE
-            // Synthesized bid generation with randomized timing
-            // Depends on: utility_helpers, auction_state
-            // ============================================================
-            ScrapsNBids.BiddingEngine = (function (Utils, AuctionState) {
-                var BIDDERS = [
-                    "FoodieGregory",
-                    "BargainBeth",
-                    "SnackAttack99",
-                    "ThriftyTina",
-                    "LunchLarry",
-                    "DealDave",
-                    "MealStealer",
-                    "CheapEats_Carol",
-                    "BidKing_Tom",
-                    "LeftoverLove",
-                    "BargainHunter_X",
-                    "PricePete",
-                ];
-
-                function startBiddingEngine(onBid, getRemainingSeconds) {
-                    var stopped = false;
-                    var timeoutId = null;
-
-                    function scheduleBid(isFirst) {
-                        if (stopped) return;
-                        if (AuctionState.getStatus() !== "active") return;
-
-                        var remaining = getRemainingSeconds
-                            ? getRemainingSeconds()
-                            : 999;
-                        var delay;
-
-                        if (isFirst) {
-                            delay = Utils.randomInt(3, 8) * 1000;
-                        } else if (remaining <= 10) {
-                            delay = Utils.randomInt(1, 3) * 1000;
-                        } else {
-                            delay = Utils.randomInt(2, 6) * 1000;
-                        }
-
-                        timeoutId = setTimeout(function () {
-                            if (stopped) return;
-                            if (AuctionState.getStatus() !== "active") return;
-
-                            var bidder = Utils.randomChoice(BIDDERS);
-                            var isJump = Math.random() < 0.2;
-                            var increment = Utils.randomBidIncrement(isJump);
-                            var amount = +(
-                                AuctionState.getHighestBid() + increment
-                            ).toFixed(2);
-
-                            onBid(bidder, amount);
-                            scheduleBid(false);
-                        }, delay);
-                    }
-
-                    scheduleBid(true);
-
-                    return function stopBiddingEngine() {
-                        stopped = true;
-                        if (timeoutId) clearTimeout(timeoutId);
-                    };
-                }
-
-                return {
-                    startBiddingEngine: startBiddingEngine,
-                };
-            })(ScrapsNBids.Utils, ScrapsNBids.AuctionState);
-
-            // ============================================================
-            // MODULE 8: DOM RENDER
-            // All UI updates and element manipulation
-            // Depends on: utility_helpers, auction_state
-            // ============================================================
-            ScrapsNBids.DOMRender = (function (Utils) {
-                var els = {};
+            (function() {
+                // DOM element cache
+                const els = {};
+                let lastState = null;
 
                 function cacheElements() {
-                    els.mealPhoto = document.getElementById("meal-photo");
-                    els.mealName = document.getElementById("meal-name");
-                    els.mealDescription =
-                        document.getElementById("meal-description");
-                    els.mealCategory = document.getElementById("meal-category");
-                    els.auctionStatus =
-                        document.getElementById("auction-status");
-                    els.countdown = document.getElementById("countdown");
-                    els.currentBid = document.getElementById("current-bid");
-                    els.bidList = document.getElementById("bid-list");
-                    els.winnerBanner = document.getElementById("winner-banner");
-                    els.endScreen = document.getElementById("end-screen");
-                    els.mealProgress = document.getElementById("meal-progress");
-                    els.auctionCard = document.getElementById("auction-card");
-                    els.bidFeed = document.getElementById("bid-feed");
+                    els.mealPhoto = document.getElementById('meal-photo');
+                    els.mealName = document.getElementById('meal-name');
+                    els.mealDescription = document.getElementById('meal-description');
+                    els.mealCategory = document.getElementById('meal-category');
+                    els.auctionStatus = document.getElementById('auction-status');
+                    els.countdown = document.getElementById('countdown');
+                    els.currentBid = document.getElementById('current-bid');
+                    els.bidList = document.getElementById('bid-list');
+                    els.winnerBanner = document.getElementById('winner-banner');
+                    els.auctionCard = document.getElementById('auction-card');
+                    els.bidFeed = document.getElementById('bid-feed');
+                }
+
+                function formatCurrency(amount) {
+                    return '$' + amount.toFixed(2);
                 }
 
                 function formatCountdown(seconds) {
-                    var m = Math.floor(seconds / 60);
-                    var s = seconds % 60;
-                    return m + ":" + (s < 10 ? "0" : "") + s;
+                    const m = Math.floor(seconds / 60);
+                    const s = seconds % 60;
+                    return m + ':' + (s < 10 ? '0' : '') + s;
                 }
 
-                function renderAuctionCard(
-                    meal,
-                    highestBid,
-                    countdown,
-                    status,
-                ) {
+                function formatRelativeTime(timestamp) {
+                    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+                    if (seconds < 2) return 'just now';
+                    if (seconds < 60) return seconds + 's ago';
+                    const minutes = Math.floor(seconds / 60);
+                    return minutes + 'm ago';
+                }
+
+                function renderState(state) {
+                    const meal = state.meal;
+
+                    // Update meal info
                     els.mealPhoto.src = meal.photo;
                     els.mealPhoto.alt = meal.name;
                     els.mealName.textContent = meal.name;
                     els.mealDescription.textContent = meal.description;
                     els.mealCategory.textContent = meal.category;
-                    els.countdown.textContent = formatCountdown(countdown);
-                    els.currentBid.textContent =
-                        Utils.formatCurrency(highestBid);
 
-                    els.auctionStatus.className = "";
-                    if (status === "active") {
-                        els.auctionStatus.textContent = "LIVE";
-                        els.auctionStatus.classList.add("live");
-                    } else if (status === "sold") {
-                        els.auctionStatus.textContent = "SOLD";
-                        els.auctionStatus.classList.add("sold");
+                    // Update countdown
+                    els.countdown.textContent = formatCountdown(state.remaining);
+                    if (state.remaining <= 10) {
+                        els.countdown.classList.add('warning');
+                    } else {
+                        els.countdown.classList.remove('warning');
                     }
+
+                    // Update current bid
+                    const highestBid = state.bids.length > 0
+                        ? state.bids[state.bids.length - 1].amount
+                        : meal.startingBid;
+                    els.currentBid.textContent = formatCurrency(highestBid);
+
+                    // Update status
+                    els.auctionStatus.className = '';
+                    if (state.status === 'active') {
+                        els.auctionStatus.textContent = 'LIVE';
+                        els.auctionStatus.classList.add('live');
+                        els.winnerBanner.classList.remove('visible');
+                        els.auctionCard.classList.remove('hidden');
+                        els.bidFeed.classList.remove('hidden');
+                    } else if (state.status === 'sold') {
+                        els.auctionStatus.textContent = 'SOLD';
+                        els.auctionStatus.classList.add('sold');
+
+                        // Show winner banner
+                        if (state.winner) {
+                            els.winnerBanner.querySelector('.winner-emoji').textContent = '🎉🏆🎉';
+                            els.winnerBanner.querySelector('.winner-text').textContent = state.winner.bidder + ' wins!';
+                            els.winnerBanner.querySelector('.winner-details').textContent =
+                                meal.name + ' sold for ' + formatCurrency(state.winner.amount);
+                            els.winnerBanner.classList.add('visible');
+                        }
+                    }
+
+                    // Update bid feed
+                    renderBidFeed(state.bids);
                 }
 
                 function renderBidFeed(bids) {
-                    var fragment = document.createDocumentFragment();
-                    var reversed = bids.slice().reverse();
+                    const fragment = document.createDocumentFragment();
+                    const reversed = bids.slice().reverse();
 
-                    for (var i = 0; i < reversed.length; i++) {
-                        var bid = reversed[i];
-                        var entry = document.createElement("div");
-                        entry.className = "bid-entry";
+                    for (let i = 0; i < reversed.length; i++) {
+                        const bid = reversed[i];
+                        const entry = document.createElement('div');
+                        entry.className = 'bid-entry';
 
-                        var nameSpan = document.createElement("span");
-                        nameSpan.className = "bid-name";
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'bid-name';
                         nameSpan.textContent = bid.bidder;
 
-                        var rightSide = document.createElement("span");
+                        const rightSide = document.createElement('span');
 
-                        var amountSpan = document.createElement("span");
-                        amountSpan.className = "bid-amount";
-                        amountSpan.textContent = Utils.formatCurrency(
-                            bid.amount,
-                        );
+                        const amountSpan = document.createElement('span');
+                        amountSpan.className = 'bid-amount';
+                        amountSpan.textContent = formatCurrency(bid.amount);
 
-                        var timeSpan = document.createElement("span");
-                        timeSpan.className = "bid-time";
-                        timeSpan.textContent = Utils.formatRelativeTime(
-                            bid.timestamp,
-                        );
+                        const timeSpan = document.createElement('span');
+                        timeSpan.className = 'bid-time';
+                        timeSpan.textContent = formatRelativeTime(bid.timestamp);
 
                         rightSide.appendChild(amountSpan);
                         rightSide.appendChild(timeSpan);
@@ -817,218 +522,37 @@
                         fragment.appendChild(entry);
                     }
 
-                    els.bidList.innerHTML = "";
+                    els.bidList.innerHTML = '';
                     els.bidList.appendChild(fragment);
                 }
 
-                function renderWinnerBanner(bidder, meal, amount) {
-                    els.winnerBanner.querySelector(
-                        ".winner-emoji",
-                    ).textContent = "🎉🏆🎉";
-                    els.winnerBanner.querySelector(".winner-text").textContent =
-                        bidder + " wins!";
-                    els.winnerBanner.querySelector(
-                        ".winner-details",
-                    ).textContent =
-                        meal.name + " sold for " + Utils.formatCurrency(amount);
-                    els.winnerBanner.classList.add("visible");
-                }
-
-                function hideWinnerBanner() {
-                    els.winnerBanner.classList.remove("visible");
-                }
-
-                function renderEndScreen() {
-                    els.auctionCard.classList.add("hidden");
-                    els.bidFeed.classList.add("hidden");
-                    hideWinnerBanner();
-
-                    els.endScreen.querySelector(".end-emoji").textContent =
-                        "🍽️";
-                    els.endScreen.querySelector("h2").textContent =
-                        "That's all folks!";
-                    els.endScreen.querySelector("p").textContent =
-                        "All 6 meals have been auctioned off. Thanks for watching!";
-                    els.endScreen.classList.add("visible");
-                }
-
-                function updateMealProgress(current, total) {
-                    els.mealProgress.textContent = current + " of " + total;
-                }
-
-                function updateCountdownColor(remaining) {
-                    if (remaining <= 10) {
-                        els.countdown.classList.add("warning");
-                    } else {
-                        els.countdown.classList.remove("warning");
-                    }
-                }
-
-                function showAuctionUI() {
-                    els.auctionCard.classList.remove("hidden");
-                    els.bidFeed.classList.remove("hidden");
-                    els.endScreen.classList.remove("visible");
-                }
-
-                return {
-                    cacheElements: cacheElements,
-                    renderAuctionCard: renderAuctionCard,
-                    renderBidFeed: renderBidFeed,
-                    renderWinnerBanner: renderWinnerBanner,
-                    hideWinnerBanner: hideWinnerBanner,
-                    renderEndScreen: renderEndScreen,
-                    updateMealProgress: updateMealProgress,
-                    updateCountdownColor: updateCountdownColor,
-                    showAuctionUI: showAuctionUI,
-                };
-            })(ScrapsNBids.Utils);
-
-            // ============================================================
-            // MODULE 9: AUCTION LIFECYCLE
-            // Orchestrates all modules, controls state transitions
-            // Depends on: all modules above
-            // ============================================================
-            (function (
-                MEALS,
-                Utils,
-                AuctionState,
-                Timer,
-                BiddingEngine,
-                DOMRender,
-            ) {
-                // Delay between auctions (ms) - time to show winner banner
-                var AUCTION_TRANSITION_DELAY = 3000;
-
-                var stopCountdown = null;
-                var stopBidding = null;
-                var remainingSeconds = 0;
-
-                function startAuctionForCurrentMeal() {
+                async function pollState() {
                     try {
-                        var meal = AuctionState.getCurrentMeal();
-                        var index = AuctionState.getCurrentMealIndex();
-                        remainingSeconds = meal.auctionDuration;
+                        const response = await fetch('/api/state');
+                        if (!response.ok) throw new Error('API error');
 
-                        DOMRender.showAuctionUI();
-                        DOMRender.hideWinnerBanner();
-                        DOMRender.renderAuctionCard(
-                            meal,
-                            AuctionState.getHighestBid(),
-                            remainingSeconds,
-                            "active",
-                        );
-                        DOMRender.renderBidFeed([]);
-                        DOMRender.updateCountdownColor(remainingSeconds);
-
-                        stopCountdown = Timer.startCountdown(
-                            meal.auctionDuration,
-                            function onTick(remaining) {
-                                remainingSeconds = remaining;
-                                DOMRender.renderAuctionCard(
-                                    AuctionState.getCurrentMeal(),
-                                    AuctionState.getHighestBid(),
-                                    remaining,
-                                    AuctionState.getStatus(),
-                                );
-                                DOMRender.updateCountdownColor(remaining);
-                            },
-                            function onComplete() {
-                                closeAuction();
-                            },
-                        );
-
-                        stopBidding = BiddingEngine.startBiddingEngine(
-                            function onBid(bidder, amount) {
-                                AuctionState.addBid(bidder, amount);
-                                DOMRender.renderAuctionCard(
-                                    AuctionState.getCurrentMeal(),
-                                    AuctionState.getHighestBid(),
-                                    remainingSeconds,
-                                    AuctionState.getStatus(),
-                                );
-                                DOMRender.renderBidFeed(AuctionState.getBids());
-                            },
-                            function getRemainingSeconds() {
-                                return remainingSeconds;
-                            },
-                        );
-
-                        console.log(
-                            "[Lifecycle] Auction started for:",
-                            meal.name,
-                        );
+                        const state = await response.json();
+                        renderState(state);
+                        lastState = state;
                     } catch (err) {
-                        console.error(
-                            "[Lifecycle] Error starting auction:",
-                            err,
-                        );
-                    }
-                }
-
-                function closeAuction() {
-                    try {
-                        if (stopBidding) stopBidding();
-                        stopBidding = null;
-
-                        AuctionState.markAsSold();
-                        var meal = AuctionState.getCurrentMeal();
-                        var winner = AuctionState.getWinner();
-
-                        DOMRender.renderAuctionCard(
-                            meal,
-                            AuctionState.getHighestBid(),
-                            0,
-                            "sold",
-                        );
-
-                        if (winner) {
-                            DOMRender.renderWinnerBanner(
-                                winner.bidder,
-                                meal,
-                                winner.amount,
-                            );
-                        }
-
-                        console.log(
-                            "[Lifecycle] Auction closed for:",
-                            meal.name,
-                        );
-
-                        setTimeout(function () {
-                            AuctionState.advanceToNextMeal();
-                            startAuctionForCurrentMeal();
-                        }, AUCTION_TRANSITION_DELAY);
-                    } catch (err) {
-                        console.error(
-                            "[Lifecycle] Error closing auction:",
-                            err,
-                        );
+                        console.error('[Polling] Error:', err);
                     }
                 }
 
                 function init() {
-                    try {
-                        DOMRender.cacheElements();
-                        AuctionState.initAuction();
-                        startAuctionForCurrentMeal();
-                        console.log("[Lifecycle] App initialized");
-                    } catch (err) {
-                        console.error(
-                            "[Lifecycle] Error initializing app:",
-                            err,
-                        );
-                    }
+                    cacheElements();
+
+                    // Initial poll
+                    pollState();
+
+                    // Poll every 1.5 seconds
+                    setInterval(pollState, 1500);
+
+                    console.log('[Client] Polling client initialized');
                 }
 
-                document.addEventListener("DOMContentLoaded", init);
-            })(
-                ScrapsNBids.MEALS,
-                ScrapsNBids.Utils,
-                ScrapsNBids.AuctionState,
-                ScrapsNBids.Timer,
-                ScrapsNBids.BiddingEngine,
-                ScrapsNBids.DOMRender,
-            );
+                document.addEventListener('DOMContentLoaded', init);
+            })();
         </script>
     </body>
 </html>
