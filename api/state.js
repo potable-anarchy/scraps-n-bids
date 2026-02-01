@@ -1,19 +1,82 @@
-import { kv } from '@vercel/kv';
+import { kv } from "@vercel/kv";
 
 // Meal data (same as client)
 const MEALS = [
-  { id: 'tuesdays-pad-thai', name: "Tuesday's Pad Thai", description: "Was going to finish it but then someone mentioned cake in the break room.", category: 'asian', startingBid: 1.50, photo: 'images/pad-thai.png', auctionDuration: 45 },
-  { id: 'half-a-burrito', name: 'Half a Burrito', description: "The good half. Someone already took the end with all the sour cream.", category: 'mexican', startingBid: 2.00, photo: 'images/burrito.png', auctionDuration: 40 },
-  { id: 'mystery-stir-fry', name: 'Mystery Stir Fry', description: "It was definitely vegetables at some point. Could be anything now.", category: 'asian', startingBid: 1.00, photo: 'images/stir-fry.png', auctionDuration: 35 },
-  { id: 'sad-desk-salad', name: 'Sad Desk Salad', description: "Wilting gracefully since 11:30 AM. Dressing on the side (missing).", category: 'american', startingBid: 0.75, photo: 'images/salad.png', auctionDuration: 40 },
-  { id: 'quarter-pepperoni-pizza', name: 'Quarter Pepperoni Pizza', description: "Three slices already claimed. This is the survivor. Slightly cold.", category: 'american', startingBid: 3.00, photo: 'images/pizza.png', auctionDuration: 50 },
-  { id: 'leftover-lasagna-block', name: 'Leftover Lasagna Block', description: "A dense cube of layered perfection. Microwave at your own risk.", category: 'italian', startingBid: 2.50, photo: 'images/lasagna.png', auctionDuration: 45 },
+  {
+    id: "tuesdays-pad-thai",
+    name: "Tuesday's Pad Thai",
+    description:
+      "Was going to finish it but then someone mentioned cake in the break room.",
+    category: "asian",
+    startingBid: 1.5,
+    photo: "images/pad-thai.png",
+    auctionDuration: 45,
+  },
+  {
+    id: "half-a-burrito",
+    name: "Half a Burrito",
+    description:
+      "The good half. Someone already took the end with all the sour cream.",
+    category: "mexican",
+    startingBid: 2.0,
+    photo: "images/burrito.png",
+    auctionDuration: 40,
+  },
+  {
+    id: "mystery-stir-fry",
+    name: "Mystery Stir Fry",
+    description:
+      "It was definitely vegetables at some point. Could be anything now.",
+    category: "asian",
+    startingBid: 1.0,
+    photo: "images/stir-fry.png",
+    auctionDuration: 35,
+  },
+  {
+    id: "sad-desk-salad",
+    name: "Sad Desk Salad",
+    description:
+      "Wilting gracefully since 11:30 AM. Dressing on the side (missing).",
+    category: "american",
+    startingBid: 0.75,
+    photo: "images/salad.png",
+    auctionDuration: 40,
+  },
+  {
+    id: "quarter-pepperoni-pizza",
+    name: "Quarter Pepperoni Pizza",
+    description:
+      "Three slices already claimed. This is the survivor. Slightly cold.",
+    category: "american",
+    startingBid: 3.0,
+    photo: "images/pizza.png",
+    auctionDuration: 50,
+  },
+  {
+    id: "leftover-lasagna-block",
+    name: "Leftover Lasagna Block",
+    description:
+      "A dense cube of layered perfection. Microwave at your own risk.",
+    category: "italian",
+    startingBid: 2.5,
+    photo: "images/lasagna.png",
+    auctionDuration: 45,
+  },
 ];
 
 const BIDDERS = [
-  'FoodieGregory', 'BargainBeth', 'SnackAttack99', 'ThriftyTina',
-  'LunchLarry', 'DealDave', 'MealStealer', 'CheapEats_Carol',
-  'BidKing_Tom', 'LeftoverLove', 'BargainHunter_X', 'PricePete'
+  "FoodieGregory",
+  "BargainBeth",
+  "SnackAttack99",
+  "ThriftyTina",
+  "LunchLarry",
+  "DealDave",
+  "MealStealer",
+  "CheapEats_Carol",
+  "BidKing_Tom",
+  "LeftoverLove",
+  "BargainHunter_X",
+  "PricePete",
 ];
 
 function randomChoice(arr) {
@@ -22,9 +85,9 @@ function randomChoice(arr) {
 
 function randomBidIncrement(isJump) {
   if (isJump) {
-    return +(1.00 + Math.random() * 1.00).toFixed(2);
+    return +(1.0 + Math.random() * 1.0).toFixed(2);
   }
-  return +(0.10 + Math.random() * 0.65).toFixed(2);
+  return +(0.1 + Math.random() * 0.65).toFixed(2);
 }
 
 async function initializeAuction() {
@@ -36,12 +99,12 @@ async function initializeAuction() {
     meal,
     bids: [],
     startedAt: Date.now(),
-    status: 'active',
+    status: "active",
     lastBidAt: Date.now(),
-    winner: null
+    winner: null,
   };
 
-  await kv.set('auction_state', state);
+  await kv.set("auction_state", state);
   return state;
 }
 
@@ -51,23 +114,23 @@ async function tickAuction(state) {
   const remaining = state.meal.auctionDuration - elapsed;
 
   // Auction ended
-  if (remaining <= 0 && state.status === 'active') {
-    state.status = 'sold';
+  if (remaining <= 0 && state.status === "active") {
+    state.status = "sold";
     if (state.bids.length > 0) {
       state.winner = state.bids[state.bids.length - 1];
     }
     state.soldAt = now;
-    await kv.set('auction_state', state);
+    await kv.set("auction_state", state);
     return state;
   }
 
   // Transition to next auction after 3 seconds
-  if (state.status === 'sold' && (now - state.soldAt) > 3000) {
+  if (state.status === "sold" && now - state.soldAt > 3000) {
     return await initializeAuction();
   }
 
   // Generate synthetic bids
-  if (state.status === 'active') {
+  if (state.status === "active") {
     const timeSinceLastBid = (now - state.lastBidAt) / 1000;
 
     // Bid timing logic
@@ -85,9 +148,10 @@ async function tickAuction(state) {
 
     if (shouldBid) {
       const bidder = randomChoice(BIDDERS);
-      const currentHigh = state.bids.length > 0
-        ? state.bids[state.bids.length - 1].amount
-        : state.meal.startingBid;
+      const currentHigh =
+        state.bids.length > 0
+          ? state.bids[state.bids.length - 1].amount
+          : state.meal.startingBid;
       const isJump = Math.random() < 0.2;
       const increment = randomBidIncrement(isJump);
       const amount = +(currentHigh + increment).toFixed(2);
@@ -95,10 +159,10 @@ async function tickAuction(state) {
       state.bids.push({
         bidder,
         amount,
-        timestamp: now
+        timestamp: now,
       });
       state.lastBidAt = now;
-      await kv.set('auction_state', state);
+      await kv.set("auction_state", state);
     }
   }
 
@@ -107,19 +171,22 @@ async function tickAuction(state) {
 
 export default async function handler(req, res) {
   // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Cache-Control", "no-store");
 
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
   try {
-    let state = await kv.get('auction_state');
+    let state = await kv.get("auction_state");
+
+    console.log("[API] Got state from KV:", state ? "exists" : "null");
 
     // Initialize if no state exists
     if (!state) {
+      console.log("[API] Initializing new auction");
       state = await initializeAuction();
     } else {
       // Tick the auction forward
@@ -134,10 +201,12 @@ export default async function handler(req, res) {
     res.status(200).json({
       ...state,
       remaining: Math.ceil(remaining),
-      serverTime: now
+      serverTime: now,
     });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("[API] Error:", error.message, error.stack);
+    res
+      .status(500)
+      .json({ error: "Internal server error", message: error.message });
   }
 }
