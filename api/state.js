@@ -24,7 +24,7 @@ const MEALS = [
       "Was going to finish it but then someone mentioned cake in the break room.",
     category: "asian",
     startingBid: 1.5,
-    photo: "images/pad-thai.png",
+    photo: "/images/pad-thai.png",
     auctionDuration: 45,
   },
   {
@@ -34,7 +34,7 @@ const MEALS = [
       "The good half. Someone already took the end with all the sour cream.",
     category: "mexican",
     startingBid: 2.0,
-    photo: "images/burrito.png",
+    photo: "/images/burrito.png",
     auctionDuration: 40,
   },
   {
@@ -44,7 +44,7 @@ const MEALS = [
       "It was definitely vegetables at some point. Could be anything now.",
     category: "asian",
     startingBid: 1.0,
-    photo: "images/stir-fry.png",
+    photo: "/images/stir-fry.png",
     auctionDuration: 35,
   },
   {
@@ -54,7 +54,7 @@ const MEALS = [
       "Wilting gracefully since 11:30 AM. Dressing on the side (missing).",
     category: "american",
     startingBid: 0.75,
-    photo: "images/salad.png",
+    photo: "/images/salad.png",
     auctionDuration: 40,
   },
   {
@@ -64,7 +64,7 @@ const MEALS = [
       "Three slices already claimed. This is the survivor. Slightly cold.",
     category: "american",
     startingBid: 3.0,
-    photo: "images/pizza.png",
+    photo: "/images/pizza.png",
     auctionDuration: 50,
   },
   {
@@ -74,7 +74,7 @@ const MEALS = [
       "A dense cube of layered perfection. Microwave at your own risk.",
     category: "italian",
     startingBid: 2.5,
-    photo: "images/lasagna.png",
+    photo: "/images/lasagna.png",
     auctionDuration: 45,
   },
 ];
